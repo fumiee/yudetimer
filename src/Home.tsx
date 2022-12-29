@@ -9,9 +9,8 @@ import {
   View,
   FlatList,
 } from "native-base";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { SafeAreaView, TouchableOpacity } from "react-native";
-// import BackgroundTimer from "react-native-background-timer";
 
 type TimerData = {
   id: string;
@@ -30,8 +29,8 @@ export function HomeScreen() {
     { id: "7", title: "オクラ", time: 10, memo: "お湯から" },
     { id: "8", title: "もやし", time: 3, memo: "お湯から" },
   ];
-  const [secondLeft, setSecondLeft] = useState(100);
-  // const [timerOn, setTimerOn] = useState(false);
+  const [secondLeft, setSecondLeft] = useState(0);
+  const intervalRef = useRef<any>(null);
 
   const clockify = () => {
     const min = Math.floor((secondLeft / 60) % 60);
@@ -44,18 +43,29 @@ export function HomeScreen() {
       displaySecs,
     };
   };
+  const start = useCallback(() => {
+    if (intervalRef.current != null) {
+      return;
+    }
+    intervalRef.current = setInterval(() => {
+      setSecondLeft((leftTime) => (leftTime > 0 ? leftTime - 1 : 0));
+    }, 1000);
+  }, []);
 
-  const startTimer = () => {
-    // BackgroundTimer.start(() => {
-    //   setSecondLeft((secs) => {
-    //     if (secs > 0) {
-    //       return secs - 1;
-    //     } else return 0;
-    //   });
-    // }, 1000);
-  };
+  if (secondLeft === 0) {
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  }
 
-  const renderItem = ({ item }) => (
+  const stop = useCallback(() => {
+    if (intervalRef.current === null) {
+      return;
+    }
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  }, []);
+
+  const renderItem = ({ item }: any) => (
     <Button
       marginBottom="12"
       variant="unstyled"
@@ -93,13 +103,15 @@ export function HomeScreen() {
           </Text>
           <Box bgColor="danger.200" w="full" p="4" marginY="6">
             <Flex direction="row" marginX="1/6">
-              <TouchableOpacity onPress={startTimer}>
+              <TouchableOpacity onPress={start}>
                 <Text fontSize="2xl">start</Text>
               </TouchableOpacity>
 
               <Spacer />
               <TouchableOpacity
-              // onPress={() => BackgroundTimer.stopBackgroundTimer()}
+                onPress={() => {
+                  stop();
+                }}
               >
                 <Text fontSize="2xl">stop</Text>
               </TouchableOpacity>
