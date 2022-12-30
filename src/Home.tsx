@@ -52,11 +52,6 @@ export function HomeScreen() {
     }, 1000);
   }, []);
 
-  if (secondLeft === 0) {
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
-  }
-
   const stop = useCallback(() => {
     if (intervalRef.current === null) {
       return;
@@ -65,13 +60,20 @@ export function HomeScreen() {
     intervalRef.current = null;
   }, []);
 
+  // 0になったときはタイマーをストップさせる
+  if (secondLeft === 0) {
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  }
+
   const renderItem = ({ item }: any) => (
     <Button
-      marginBottom="12"
+      marginBottom="4"
       variant="unstyled"
       onPress={() => {
         setSecondLeft(item.time);
-        console.log("press!");
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }}
     >
       <Center
@@ -93,7 +95,9 @@ export function HomeScreen() {
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
         >
-          <Text fontSize="2xl">ゆでたいまー</Text>
+          <Text fontSize="2xl" marginTop={8}>
+            ゆでたいまー
+          </Text>
           <Text fontSize="sm" marginBottom="5">
             野菜の茹で時間はシャキシャキ時間！
           </Text>
@@ -108,11 +112,7 @@ export function HomeScreen() {
               </TouchableOpacity>
 
               <Spacer />
-              <TouchableOpacity
-                onPress={() => {
-                  stop();
-                }}
-              >
+              <TouchableOpacity onPress={stop}>
                 <Text fontSize="2xl">stop</Text>
               </TouchableOpacity>
             </Flex>
